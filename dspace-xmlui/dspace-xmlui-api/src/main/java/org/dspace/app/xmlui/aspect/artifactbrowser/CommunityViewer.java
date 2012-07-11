@@ -70,14 +70,6 @@ public class CommunityViewer extends AbstractDSpaceTransformer implements Cachea
     
     private static final Message T_browse_dates =
         message("xmlui.ArtifactBrowser.CommunityViewer.browse_dates");
-    
-
-    private static final Message T_head_sub_communities = 
-        message("xmlui.ArtifactBrowser.CommunityViewer.head_sub_communities");
-    
-    private static final Message T_head_sub_collections =
-        message("xmlui.ArtifactBrowser.CommunityViewer.head_sub_collections");
-    
 
     /** Cached validity object */
     private SourceValidity validity;
@@ -133,39 +125,6 @@ public class CommunityViewer extends AbstractDSpaceTransformer implements Cachea
 	            
 	            DSpaceValidity validity = new DSpaceValidity();
 	            validity.add(community);
-	            
-	            Community[] subCommunities = community.getSubcommunities();
-	            Collection[] collections = community.getCollections();
-	            // Sub communities
-	            for (Community subCommunity : subCommunities)
-	            {
-	                validity.add(subCommunity);
-	                
-	                // Include the item count in the validity, only if the value is cached.
-	                boolean useCache = ConfigurationManager.getBooleanProperty("webui.strengths.cache");
-	                if (useCache)
-	        		{
-	                    try {	
-	                    	int size = new ItemCounter(context).getCount(subCommunity);
-	                    	validity.add("size:"+size);
-	                    } catch(ItemCountException e) { /* ignore */ }
-	        		}
-	            }
-	            // Sub collections
-	            for (Collection collection : collections)
-	            {
-	                validity.add(collection);
-	                
-	                // Include the item count in the validity, only if the value is cached.
-	                boolean useCache = ConfigurationManager.getBooleanProperty("webui.strengths.cache");
-	                if (useCache)
-	        		{
-	                    try {
-	                    	int size = new ItemCounter(context).getCount(collection);
-	                    	validity.add("size:"+size);
-	                    } catch(ItemCountException e) { /* ignore */ }
-	        		}
-	            }
 
 	            this.validity = validity.complete();
 	        } 
@@ -246,8 +205,6 @@ public class CommunityViewer extends AbstractDSpaceTransformer implements Cachea
 
         // Set up the major variables
         Community community = (Community) dso;
-        Community[] subCommunities = community.getSubcommunities();
-        Collection[] collections = community.getCollections();
 
         // Build the community viewer division.
         Division home = body.addDivision("community-home", "primary repository community");
@@ -305,38 +262,8 @@ public class CommunityViewer extends AbstractDSpaceTransformer implements Cachea
         	
             ReferenceSet referenceSet = viewer.addReferenceSet("community-view",
                     ReferenceSet.TYPE_DETAIL_VIEW);
-            Reference communityInclude = referenceSet.addReference(community);
-
-            // If the community has any children communities also refrence them.
-            if (subCommunities != null && subCommunities.length > 0)
-            {
-                ReferenceSet communityReferenceSet = communityInclude
-                        .addReferenceSet(ReferenceSet.TYPE_SUMMARY_LIST,null,"hierarchy");
-
-                communityReferenceSet.setHead(T_head_sub_communities);
-
-                // Sub communities
-                for (Community subCommunity : subCommunities)
-                {
-                    communityReferenceSet.addReference(subCommunity);
-                }
-            }
-            if (collections != null && collections.length > 0)
-            {
-                ReferenceSet communityReferenceSet = communityInclude
-                        .addReferenceSet(ReferenceSet.TYPE_SUMMARY_LIST,null,"hierarchy");
-
-                communityReferenceSet.setHead(T_head_sub_collections);
-                       
-
-                // Sub collections
-                for (Collection collection : collections)
-                {
-                    communityReferenceSet.addReference(collection);
-                }
-
-            }
-        }// main refrence
+            referenceSet.addReference(community);
+        }// main reference
     }
     
 
